@@ -71,7 +71,7 @@ const PROJECTS: Project[] = [
     tech: ["React Native", "Node.js", "MongoDB", "Firebase"],
     github: "https://github.com/santoshmishras951-coder",
     demo: "https://santoshmishras951-1774416949283.atlassian.net/wiki/spaces/~71202056a8fc3de06d4741bb7c4b9bc8a8033d/pages/edit-v2/66022?draftShareId=17427745-0a41-4148-a092-8a0f2c8171a1&createdWithTemplate=true",
-    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT993mjXXz-a04PdbWhVgSAFWLZ6XkFgBwnPw&s"
+    image: "/profile.jpeg"
   },
   {
     title: "Task Manger",
@@ -707,7 +707,7 @@ export default function App() {
                     
                     <div className="w-full h-full rounded-[2.8rem] overflow-hidden relative">
                       <img 
-                        src="WhatsApp Image 2026-03-16 at 7.52.09 PM.jpeg" 
+                        src="/profile.jpeg" 
                         alt="Santosh Mishra" 
                         className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 group-hover:rotate-2"
                         referrerPolicy="no-referrer"

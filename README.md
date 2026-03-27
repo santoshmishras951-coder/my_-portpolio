@@ -18,3 +18,4 @@ View your app in AI Studio: https://ai.studio/apps/2f6bfe6f-c86f-4803-bd88-99ae7
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
+# my_-portpolio
