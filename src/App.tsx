@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect, useRef, ReactNode, FormEvent } from 'react';
+import { useState, useEffect, useRef, ReactNode, FormEvent, MouseEvent } from 'react';
 import { 
   Github, 
   Linkedin, 
@@ -27,11 +27,124 @@ import {
   Layers,
   Users,
   Instagram,
-  Star,
-  Sparkles,
-  Heart
+  Moon,
+  Sun,
+  Palette,
 } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useSpring } from 'motion/react';
+
+type ThemeMode = 'dark' | 'light' | 'custom';
+type ScrollMode = 'manual' | 'automatic';
+
+type ThemePalette = {
+  [key: string]: string;
+};
+
+const THEME_PRESETS: Record<string, ThemePalette> = {
+  dark: {
+    '--color-primary': '#8b5cf6',
+    '--color-secondary': '#06b6d4',
+    '--color-accent': '#facc15',
+    '--color-pink': '#ec4899',
+    '--color-orange': '#f97316',
+    '--color-dark': '#020617',
+    '--color-text': '#ffffff',
+    '--color-text-muted': 'rgba(255,255,255,0.7)',
+    '--surface': 'rgba(255,255,255,0.08)',
+    '--surface-border': 'rgba(255,255,255,0.12)',
+    '--bg-start': '#020617',
+    '--bg-mid': '#0f172a',
+    '--bg-end': '#1e1b4b',
+    '--primary-rgb': '139,92,246',
+  },
+  light: {
+    '--color-primary': '#2563eb',
+    '--color-secondary': '#0891b2',
+    '--color-accent': '#f59e0b',
+    '--color-pink': '#db2777',
+    '--color-orange': '#ea580c',
+    '--color-dark': '#f8fafc',
+    '--color-text': '#0f172a',
+    '--color-text-muted': '#334155',
+    '--surface': 'rgba(15,23,42,0.05)',
+    '--surface-border': 'rgba(15,23,42,0.14)',
+    '--bg-start': '#f8fafc',
+    '--bg-mid': '#ffffff',
+    '--bg-end': '#e2e8f0',
+    '--primary-rgb': '37,99,235',
+  },
+  emerald: {
+    '--color-primary': '#10b981',
+    '--color-secondary': '#14b8a6',
+    '--color-accent': '#f59e0b',
+    '--color-pink': '#22c55e',
+    '--color-orange': '#f97316',
+    '--color-dark': '#052e2b',
+    '--color-text': '#f0fdfa',
+    '--color-text-muted': 'rgba(240,253,250,0.75)',
+    '--surface': 'rgba(240,253,250,0.07)',
+    '--surface-border': 'rgba(240,253,250,0.14)',
+    '--bg-start': '#022c22',
+    '--bg-mid': '#064e3b',
+    '--bg-end': '#0f766e',
+    '--primary-rgb': '16,185,129',
+  },
+  sunset: {
+    '--color-primary': '#f97316',
+    '--color-secondary': '#ef4444',
+    '--color-accent': '#facc15',
+    '--color-pink': '#ec4899',
+    '--color-orange': '#fb923c',
+    '--color-dark': '#431407',
+    '--color-text': '#fff7ed',
+    '--color-text-muted': 'rgba(255,247,237,0.75)',
+    '--surface': 'rgba(255,247,237,0.08)',
+    '--surface-border': 'rgba(255,247,237,0.16)',
+    '--bg-start': '#431407',
+    '--bg-mid': '#7c2d12',
+    '--bg-end': '#b45309',
+    '--primary-rgb': '249,115,22',
+  },
+  ocean: {
+    '--color-primary': '#0ea5e9',
+    '--color-secondary': '#6366f1',
+    '--color-accent': '#22d3ee',
+    '--color-pink': '#a78bfa',
+    '--color-orange': '#38bdf8',
+    '--color-dark': '#082f49',
+    '--color-text': '#f0f9ff',
+    '--color-text-muted': 'rgba(240,249,255,0.75)',
+    '--surface': 'rgba(240,249,255,0.07)',
+    '--surface-border': 'rgba(240,249,255,0.14)',
+    '--bg-start': '#082f49',
+    '--bg-mid': '#0c4a6e',
+    '--bg-end': '#1d4ed8',
+    '--primary-rgb': '14,165,233',
+  },
+  rose: {
+    '--color-primary': '#e11d48',
+    '--color-secondary': '#f43f5e',
+    '--color-accent': '#fb7185',
+    '--color-pink': '#f472b6',
+    '--color-orange': '#fb7185',
+    '--color-dark': '#4c0519',
+    '--color-text': '#fff1f2',
+    '--color-text-muted': 'rgba(255,241,242,0.75)',
+    '--surface': 'rgba(255,241,242,0.08)',
+    '--surface-border': 'rgba(255,241,242,0.16)',
+    '--bg-start': '#4c0519',
+    '--bg-mid': '#881337',
+    '--bg-end': '#be123c',
+    '--primary-rgb': '225,29,72',
+  },
+};
+
+const CUSTOM_THEME_OPTIONS = [
+  { id: 'emerald', label: 'Emerald' },
+  { id: 'sunset', label: 'Sunset' },
+  { id: 'ocean', label: 'Ocean' },
+  { id: 'rose', label: 'Rose' },
+];
 
 // --- Types ---
 interface Project {
@@ -69,9 +182,9 @@ const PROJECTS: Project[] = [
     title: "Kaniha Medical App",
     description: "A full-stack mobile application that helps users to book slot and get ticket for trement.",
     tech: ["React Native", "Node.js", "MongoDB", "Firebase"],
-    github: "https://github.com/santoshmishras951-coder",
-    demo: "https://santoshmishras951-1774416949283.atlassian.net/wiki/spaces/~71202056a8fc3de06d4741bb7c4b9bc8a8033d/pages/edit-v2/66022?draftShareId=17427745-0a41-4148-a092-8a0f2c8171a1&createdWithTemplate=true",
-    image: "/profile.jpeg"
+    github: "https://github.com/santoshmishras951-coder/kaniha_medical",
+    demo: "https://github.com/santoshmishras951-coder/kaniha_medical",
+    image: "https://images.unsplash.com/photo-1584982751601-97dcc096659c?auto=format&fit=crop&w=1200&q=80"
   },
   {
     title: "Task Manger",
@@ -190,72 +303,8 @@ const SectionHeading = ({ title, subtitle }: { title: string; subtitle?: string 
 );
 
 const ThankYou = ({ name, onBack }: { name: string; onBack: () => void }) => {
-  const rewards = [Star, Trophy, Award, Heart, Sparkles];
-  
   return (
     <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 text-center gradient-bg relative overflow-hidden">
-      {/* Dynamic Animated Background Gradients */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.2, 1],
-            rotate: [0, 90, 0],
-            x: [0, 100, 0],
-            y: [0, 50, 0]
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-primary/20 rounded-full blur-[120px]"
-        />
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.3, 1],
-            rotate: [0, -90, 0],
-            x: [0, -100, 0],
-            y: [0, -50, 0]
-          }}
-          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-          className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-secondary/20 rounded-full blur-[120px]"
-        />
-      </div>
-
-      {/* Falling Rewards Animation */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
-        {[...Array(40)].map((_, i) => {
-          const Icon = rewards[i % rewards.length];
-          const size = Math.random() * 20 + 15;
-          const duration = Math.random() * 6 + 4;
-          const delay = Math.random() * 8;
-          const left = Math.random() * 100;
-          
-          return (
-            <motion.div
-              key={i}
-              initial={{ 
-                opacity: 0, 
-                y: -100,
-                x: `${left}%`,
-                rotate: 0
-              }}
-              animate={{ 
-                opacity: [0, 1, 1, 0],
-                y: [null, window.innerHeight + 100],
-                rotate: [0, 720 * (Math.random() > 0.5 ? 1 : -1)]
-              }}
-              transition={{ 
-                duration: duration, 
-                repeat: Infinity,
-                delay: delay,
-                ease: "linear"
-              }}
-              className="absolute drop-shadow-[0_0_10px_rgba(139,92,246,0.6)]"
-              style={{ color: i % 3 === 0 ? '#8B5CF6' : i % 3 === 1 ? '#06B6D4' : '#EC4899' }}
-            >
-              <Icon size={size} strokeWidth={1.5} />
-            </motion.div>
-          );
-        })}
-      </div>
-
       <motion.div
         initial={{ opacity: 0, scale: 0.8, y: 100 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -267,9 +316,9 @@ const ThankYou = ({ name, onBack }: { name: string; onBack: () => void }) => {
         className="relative group w-full max-w-2xl z-20"
       >
         {/* Colorful Glow Background for the Box */}
-        <div className="absolute -inset-4 sm:-inset-8 bg-gradient-to-r from-primary via-secondary to-accent rounded-[3rem] sm:rounded-[4rem] blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-700 animate-pulse" />
+        <div className="absolute -inset-4 sm:-inset-8 bg-gradient-to-r from-primary via-secondary to-accent rounded-[3rem] sm:rounded-[4rem] opacity-20 group-hover:opacity-30 transition-opacity duration-700" />
         
-        <div className="glass p-8 sm:p-12 md:p-16 rounded-[2.5rem] sm:rounded-[3.5rem] w-full shadow-2xl relative z-10 border border-white/20 bg-gradient-to-br from-white/15 via-white/5 to-transparent backdrop-blur-2xl overflow-hidden">
+        <div className="glass p-8 sm:p-12 md:p-16 rounded-[2.5rem] sm:rounded-[3.5rem] w-full shadow-2xl relative z-10 border border-white/20 bg-gradient-to-br from-white/15 via-white/5 to-transparent overflow-hidden">
           {/* Internal Animated Beam */}
           <motion.div 
             animate={{ 
@@ -348,73 +397,33 @@ const ThankYou = ({ name, onBack }: { name: string; onBack: () => void }) => {
   );
 };
 
-const InitialRewardsAnimation = () => {
-  const rewards = [Star, Trophy, Award, Heart, Sparkles];
-  return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 overflow-hidden pointer-events-none z-[9999] bg-dark/20 backdrop-blur-[2px]"
-    >
-      {[...Array(120)].map((_, i) => {
-        const Icon = rewards[i % rewards.length];
-        const size = Math.random() * 25 + 15;
-        const left = Math.random() * 100;
-        const delay = Math.random() * 1.5;
-        const duration = 2.5 + Math.random();
-        
-        return (
-          <motion.div
-            key={i}
-            initial={{ 
-              opacity: 0, 
-              y: -100,
-              x: `${left}%`,
-              rotate: 0,
-              scale: 0.5
-            }}
-            animate={{ 
-              opacity: [0, 1, 1, 0],
-              y: [-100, typeof window !== 'undefined' ? window.innerHeight + 100 : 1000, -100],
-              rotate: [0, 360, 720],
-              scale: [0.5, 1.2, 0.8],
-              x: [`${left}%`, `${left + (Math.random() * 10 - 5)}%`, `${left}%`]
-            }}
-            transition={{ 
-              duration: duration, 
-              repeat: 0,
-              delay: delay,
-              ease: "easeInOut"
-            }}
-            className="absolute drop-shadow-[0_0_20px_rgba(139,92,246,0.9)]"
-            style={{ color: i % 4 === 0 ? '#8B5CF6' : i % 4 === 1 ? '#06B6D4' : i % 4 === 2 ? '#EC4899' : '#F59E0B' }}
-          >
-            <Icon size={size} strokeWidth={2} />
-          </motion.div>
-        );
-      })}
-    </motion.div>
-  );
-};
-
 export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const [scrollMode, setScrollMode] = useState<ScrollMode>('manual');
+  const [showAutoScrollNotice, setShowAutoScrollNotice] = useState(false);
+  const [showCursorDot, setShowCursorDot] = useState(false);
+  const [pointerPos, setPointerPos] = useState({ x: 0, y: 0 });
+  const [themeMode, setThemeMode] = useState<ThemeMode>('dark');
+  const [customTheme, setCustomTheme] = useState('emerald');
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
   const [status, setStatus] = useState<{ type: 'success' | 'error' | 'loading' | null; message: string }>({ type: null, message: '' });
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedName, setSubmittedName] = useState('');
-  const [showInitialAnimation, setShowInitialAnimation] = useState(true);
   const { scrollYProgress } = useScroll();
+  const autoScrollFrameRef = useRef<number | null>(null);
+  const AUTO_SCROLL_STEP = 4.5;
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowInitialAnimation(false);
-    }, 5000); // Increased to match the 1.5s delay + 3.5s duration
-    return () => clearTimeout(timer);
-  }, []);
+    const root = document.documentElement;
+    root.setAttribute('data-theme', themeMode);
+
+    const palette = themeMode === 'custom' ? THEME_PRESETS[customTheme] : THEME_PRESETS[themeMode];
+    Object.entries(palette).forEach(([variable, value]) => {
+      root.style.setProperty(variable, value);
+    });
+  }, [themeMode, customTheme]);
 
   const handleContactSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -448,6 +457,49 @@ export default function App() {
     damping: 30,
     restDelta: 0.001
   });
+
+  useEffect(() => {
+    if (scrollMode === 'manual') {
+      setShowAutoScrollNotice(false);
+      if (autoScrollFrameRef.current !== null) {
+        cancelAnimationFrame(autoScrollFrameRef.current);
+        autoScrollFrameRef.current = null;
+      }
+      return;
+    }
+
+    setShowAutoScrollNotice(true);
+    const step = () => {
+      const pageBottom = window.innerHeight + window.scrollY;
+      const maxHeight = document.documentElement.scrollHeight;
+
+      if (pageBottom >= maxHeight - 2) {
+        window.scrollTo({ top: 0, behavior: 'auto' });
+      } else {
+        window.scrollBy({ top: AUTO_SCROLL_STEP, behavior: 'auto' });
+      }
+
+      autoScrollFrameRef.current = requestAnimationFrame(step);
+    };
+
+    autoScrollFrameRef.current = requestAnimationFrame(step);
+
+    return () => {
+      if (autoScrollFrameRef.current !== null) {
+        cancelAnimationFrame(autoScrollFrameRef.current);
+        autoScrollFrameRef.current = null;
+      }
+    };
+  }, [scrollMode]);
+
+  const handlePointerMove = (e: MouseEvent<HTMLDivElement>) => {
+    setPointerPos({ x: e.clientX, y: e.clientY });
+    setShowCursorDot(true);
+  };
+
+  const handlePointerLeave = () => {
+    setShowCursorDot(false);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -484,42 +536,12 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen gradient-bg selection:bg-primary/30 selection:text-white relative overflow-hidden">
-      <AnimatePresence>
-        {showInitialAnimation && <InitialRewardsAnimation />}
-      </AnimatePresence>
-      {/* Global Animated Background Blobs */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.2, 1],
-            rotate: [0, 90, 0],
-            x: [0, 50, 0],
-            y: [0, 30, 0]
-          }}
-          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-          className="absolute top-[-10%] left-[-5%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[100px]"
-        />
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.3, 1],
-            rotate: [0, -90, 0],
-            x: [0, -50, 0],
-            y: [0, -30, 0]
-          }}
-          transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-          className="absolute bottom-[-10%] right-[-5%] w-[50%] h-[50%] bg-secondary/10 rounded-full blur-[100px]"
-        />
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.1, 1],
-            x: [0, 30, 0],
-            y: [0, -50, 0]
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-pink/10 rounded-full blur-[80px]"
-        />
-      </div>
+    <div
+      className="min-h-screen gradient-bg selection:bg-primary/30 selection:text-white relative overflow-hidden"
+      onMouseMove={handlePointerMove}
+      onMouseLeave={handlePointerLeave}
+    >
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[radial-gradient(circle_at_top,rgba(139,92,246,0.08),transparent_38%),radial-gradient(circle_at_bottom_right,rgba(6,182,212,0.08),transparent_34%)]" />
 
       {/* Progress Bar */}
       <motion.div 
@@ -528,7 +550,7 @@ export default function App() {
       />
 
       {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/10 backdrop-blur-2xl">
+      <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/20 bg-black/45 backdrop-blur-md shadow-[0_12px_30px_rgba(2,6,23,0.45)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             <motion.div 
@@ -542,14 +564,14 @@ export default function App() {
             </motion.div>
             
             {/* Desktop Menu */}
-            <div className="hidden md:block">
+            <div className="hidden md:flex items-center gap-6">
               <div className="ml-10 flex items-baseline space-x-1 lg:space-x-4">
                 {navLinks.map((link) => (
                   <a
                     key={link.id}
                     href={`#${link.id}`}
                     className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 relative group ${
-                      activeSection === link.id ? 'text-white' : 'text-white/50 hover:text-white'
+                      activeSection === link.id ? 'text-white' : 'text-white/80 hover:text-white'
                     }`}
                   >
                     {link.name}
@@ -562,6 +584,53 @@ export default function App() {
                     <span className="absolute bottom-1 left-4 right-4 h-0.5 bg-gradient-to-r from-primary to-secondary scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
                   </a>
                 ))}
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/10 bg-white/5">
+                  <ChevronUp size={16} className="text-primary" />
+                  <select
+                    value={scrollMode}
+                    onChange={(e) => setScrollMode(e.target.value as ScrollMode)}
+                    className="bg-transparent text-sm font-semibold outline-none"
+                  >
+                    <option value="manual" className="text-black">Manual Scroll</option>
+                    <option value="automatic" className="text-black">Automatic</option>
+                  </select>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/10 bg-white/5">
+                  {themeMode === 'dark' && <Moon size={16} className="text-primary" />}
+                  {themeMode === 'light' && <Sun size={16} className="text-primary" />}
+                  {themeMode === 'custom' && <Palette size={16} className="text-primary" />}
+                  <select
+                    value={themeMode}
+                    onChange={(e) => setThemeMode(e.target.value as ThemeMode)}
+                    className="bg-transparent text-sm font-semibold outline-none"
+                  >
+                    <option value="dark" className="text-black">Dark</option>
+                    <option value="light" className="text-black">Light</option>
+                    <option value="custom" className="text-black">Custom</option>
+                  </select>
+                </div>
+                {themeMode === 'custom' && (
+                  <div className="flex items-center gap-2">
+                    {CUSTOM_THEME_OPTIONS.map((theme) => {
+                      const isActive = customTheme === theme.id;
+                      const swatchColor = THEME_PRESETS[theme.id]['--color-primary'];
+                      return (
+                        <button
+                          key={theme.id}
+                          onClick={() => setCustomTheme(theme.id)}
+                          className={`w-6 h-6 rounded-full border-2 transition-transform ${
+                            isActive ? 'border-white scale-110' : 'border-white/30 hover:scale-105'
+                          }`}
+                          style={{ backgroundColor: swatchColor }}
+                          title={theme.label}
+                          type="button"
+                        />
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -587,6 +656,46 @@ export default function App() {
               className="md:hidden glass border-t border-white/5 overflow-hidden"
             >
               <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <div className="px-3 py-3 mb-2 rounded-xl bg-white/5 border border-white/10 space-y-3">
+                  <label className="text-xs uppercase tracking-widest font-bold text-white/70">Scrolling</label>
+                  <select
+                    value={scrollMode}
+                    onChange={(e) => setScrollMode(e.target.value as ScrollMode)}
+                    className="w-full px-3 py-2 rounded-lg bg-black/20 border border-white/15 text-sm"
+                  >
+                    <option value="manual" className="text-black">Manual Scroll</option>
+                    <option value="automatic" className="text-black">Automatic</option>
+                  </select>
+
+                  <label className="text-xs uppercase tracking-widest font-bold text-white/70">Theme Mode</label>
+                  <select
+                    value={themeMode}
+                    onChange={(e) => setThemeMode(e.target.value as ThemeMode)}
+                    className="w-full px-3 py-2 rounded-lg bg-black/20 border border-white/15 text-sm"
+                  >
+                    <option value="dark" className="text-black">Dark</option>
+                    <option value="light" className="text-black">Light</option>
+                    <option value="custom" className="text-black">Custom</option>
+                  </select>
+                  {themeMode === 'custom' && (
+                    <div className="flex items-center gap-3 pt-1">
+                      {CUSTOM_THEME_OPTIONS.map((theme) => {
+                        const isActive = customTheme === theme.id;
+                        const swatchColor = THEME_PRESETS[theme.id]['--color-primary'];
+                        return (
+                          <button
+                            key={theme.id}
+                            onClick={() => setCustomTheme(theme.id)}
+                            className={`w-7 h-7 rounded-full border-2 ${isActive ? 'border-white' : 'border-white/30'}`}
+                            style={{ backgroundColor: swatchColor }}
+                            title={theme.label}
+                            type="button"
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
                 {navLinks.map((link) => (
                   <a
                     key={link.id}
@@ -619,7 +728,7 @@ export default function App() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="inline-block px-4 py-1.5 rounded-full bg-white/5 border border-white/10 mb-6 backdrop-blur-md"
+                className="inline-block px-4 py-1.5 rounded-full bg-white/5 border border-white/10 mb-6"
               >
                 <span className="text-secondary font-display text-xs sm:text-sm font-black tracking-[0.2em] uppercase">
                   Welcome to my world
@@ -664,7 +773,7 @@ export default function App() {
                   { icon: <Github />, href: "https://github.com/santoshmishras951-coder" },
                   { icon: <Linkedin />, href: "https://www.linkedin.com/in/santosh-mishra-499b86331/" },
                   { icon: <Instagram />, href: "https://www.instagram.com/" },
-                  { icon: <Mail />, href: "mailto:santoshmishras951@gmail.com" }
+                  { icon: <Mail />, href: "https://mail.google.com/mail/?view=cm&fs=1&to=santoshmishras951@gmail.co" }
                 ].map((social, idx) => (
                   <motion.a
                     key={idx}
@@ -691,19 +800,11 @@ export default function App() {
             >
               <div className="relative w-72 h-80 sm:w-80 sm:h-[28rem] md:w-[32rem] md:h-[36rem] lg:w-[30rem] lg:h-[34rem] xl:w-[34rem] xl:h-[38rem]">
                 {/* Decorative Elements - Mix Color Glows */}
-                <div className="absolute -top-10 -left-10 w-40 h-40 bg-primary/30 rounded-full blur-3xl animate-pulse" />
-                <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-secondary/30 rounded-full blur-3xl animate-pulse delay-700" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-to-tr from-primary/10 via-pink/10 to-accent/10 rounded-[4rem] blur-2xl opacity-50" />
+                <div className="absolute inset-0 rounded-[4rem] bg-gradient-to-tr from-primary/10 via-pink/10 to-accent/10 opacity-40" />
                 
                 {/* Main Photo Container with Gradient Border */}
                 <div className="relative w-full h-full p-1 bg-gradient-to-br from-primary via-secondary to-accent rounded-[3.5rem] shadow-2xl group">
                   <div className="w-full h-full glass rounded-[3.2rem] p-3 border-none overflow-hidden relative">
-                    {/* Internal Animated Beam */}
-                    <motion.div 
-                      animate={{ x: ['-100%', '200%'] }}
-                      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", repeatDelay: 1 }}
-                      className="absolute top-0 left-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-[-20deg] z-10 pointer-events-none"
-                    />
                     
                     <div className="w-full h-full rounded-[2.8rem] overflow-hidden relative">
                       <img 
@@ -723,7 +824,7 @@ export default function App() {
                 <motion.div 
                   animate={{ y: [0, -15, 0], x: [0, 5, 0] }}
                   transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute -top-6 -right-6 glass p-5 rounded-3xl flex items-center gap-4 shadow-2xl border-white/20 z-20 backdrop-blur-2xl"
+                  className="absolute -top-6 -right-6 glass p-5 rounded-3xl flex items-center gap-4 shadow-2xl border-white/20 z-20"
                 >
                   <div className="p-3 bg-gradient-to-br from-accent/40 to-orange/40 rounded-2xl shadow-lg"><Cpu className="text-white w-6 h-6" /></div>
                   <div>
@@ -735,7 +836,7 @@ export default function App() {
                 <motion.div 
                   animate={{ y: [0, 15, 0], x: [0, -5, 0] }}
                   transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute -bottom-6 -left-6 glass p-5 rounded-3xl flex items-center gap-4 shadow-2xl border-white/20 z-20 backdrop-blur-2xl"
+                  className="absolute -bottom-6 -left-6 glass p-5 rounded-3xl flex items-center gap-4 shadow-2xl border-white/20 z-20"
                 >
                   <div className="p-3 bg-gradient-to-br from-secondary/40 to-primary/40 rounded-2xl shadow-lg"><Globe className="text-white w-6 h-6" /></div>
                   <div>
@@ -749,7 +850,7 @@ export default function App() {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 1 }}
-                  className="absolute bottom-12 -right-10 glass px-8 py-4 rounded-2xl border-white/20 shadow-2xl z-20 hidden md:block backdrop-blur-2xl"
+                  className="absolute bottom-12 -right-10 glass px-8 py-4 rounded-2xl border-white/20 shadow-2xl z-20 hidden md:block"
                 >
                   <p className="text-sm font-black gradient-text-mix tracking-tight">B.Tech Student</p>
                 </motion.div>
@@ -761,8 +862,8 @@ export default function App() {
         {/* About Section */}
         <section id="about" className="py-32 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
           {/* Decorative Background Elements */}
-          <div className="absolute top-1/4 -left-20 w-64 h-64 bg-primary/10 blur-[100px] rounded-full" />
-          <div className="absolute bottom-1/4 -right-20 w-64 h-64 bg-secondary/10 blur-[100px] rounded-full" />
+          <div className="absolute top-1/4 -left-20 w-64 h-64 bg-primary/10 rounded-full" />
+          <div className="absolute bottom-1/4 -right-20 w-64 h-64 bg-secondary/10 rounded-full" />
 
           <div className="max-w-7xl mx-auto relative z-10">
             <SectionHeading 
@@ -958,7 +1059,7 @@ export default function App() {
                       whileHover={{ scale: 1.05, y: -5 }}
                       className="glass-card p-8 flex flex-col items-center text-center relative overflow-hidden group"
                     >
-                      <div className="absolute -bottom-4 -right-4 w-20 h-20 bg-secondary/5 rounded-full blur-xl group-hover:bg-secondary/10 transition-all" />
+                      <div className="absolute -bottom-4 -right-4 w-20 h-20 bg-secondary/5 rounded-full group-hover:bg-secondary/10 transition-all" />
                       
                       <div className="w-20 h-20 rounded-full border-4 border-secondary/20 flex items-center justify-center mb-6 relative">
                         <div className="absolute inset-0 rounded-full border-4 border-secondary border-t-transparent animate-spin-slow opacity-30" />
@@ -993,7 +1094,7 @@ export default function App() {
 
         {/* Projects Section */}
         <section id="projects" className="py-32 px-4 sm:px-6 lg:px-8 bg-dark/50 relative overflow-hidden">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-primary/5 blur-[150px] rounded-full pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-primary/5 rounded-full pointer-events-none" />
           
           <div className="max-w-7xl mx-auto relative z-10">
             <SectionHeading 
@@ -1021,7 +1122,7 @@ export default function App() {
                     <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/20 to-transparent opacity-80 group-hover:opacity-40 transition-opacity duration-500" />
                     <div className="absolute bottom-4 left-4 right-4 flex flex-wrap gap-2">
                       {project.tech.slice(0, 3).map((t) => (
-                        <span key={t} className="text-[10px] uppercase font-bold tracking-wider px-3 py-1.5 bg-black/40 backdrop-blur-md text-white border border-white/10 rounded-lg">
+                        <span key={t} className="text-[10px] uppercase font-bold tracking-wider px-3 py-1.5 bg-black/40 text-white border border-white/10 rounded-lg">
                           {t}
                         </span>
                       ))}
@@ -1217,7 +1318,7 @@ export default function App() {
                 viewport={{ once: true }}
                 className="glass-card p-12 md:p-16 rounded-[3rem] relative overflow-hidden group"
               >
-                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] rounded-full -mr-32 -mt-32 group-hover:bg-primary/10 transition-all" />
+                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 group-hover:bg-primary/10 transition-all" />
                 
                 <form className="space-y-8 relative z-10" onSubmit={handleContactSubmit}>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
@@ -1334,9 +1435,42 @@ export default function App() {
         </div>
       </footer>
 
+      <AnimatePresence>
+        {showCursorDot && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.6 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.6 }}
+            className="fixed z-[90] w-4 h-4 rounded-full border border-white/70 pointer-events-none"
+            style={{
+              left: pointerPos.x,
+              top: pointerPos.y,
+              transform: 'translate(-50%, -50%)',
+              background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary), var(--color-accent))',
+              boxShadow: '0 0 16px rgba(var(--primary-rgb),0.7)',
+              mixBlendMode: 'screen',
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {scrollMode === 'automatic' && showAutoScrollNotice && (
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            className="fixed top-24 right-6 z-[70] px-4 py-2 rounded-full border border-white/20 bg-black/40 text-white/90 text-xs font-bold tracking-wider uppercase flex items-center gap-2"
+          >
+            <ChevronUp size={14} />
+            Automatic Scrolling
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Back to Top Button */}
       <AnimatePresence>
-        {showBackToTop && (
+        {showBackToTop && scrollMode === 'manual' && (
           <motion.button
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
