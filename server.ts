@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 
+dotenv.config({ path: ".env.local" });
 dotenv.config();
 
 async function startServer() {
@@ -21,6 +22,13 @@ async function startServer() {
 
     if (!name || !email || !subject || !message) {
       return res.status(400).json({ error: "All fields are required" });
+    }
+
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      return res.status(503).json({
+        error:
+          "Email notifications are not configured. Set EMAIL_USER and EMAIL_PASS in .env.local.",
+      });
     }
 
     try {

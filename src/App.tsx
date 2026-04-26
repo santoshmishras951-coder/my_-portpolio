@@ -427,29 +427,52 @@ export default function App() {
 
   const handleContactSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    const form = e.currentTarget as HTMLFormElement;
     const currentName = formData.name;
     setStatus({ type: 'loading', message: 'Sending message...' });
 
     try {
-      const response = await fetch('/api/contact', {
+      const formValues = new FormData(form);
+      const payload = {
+        name: String(formValues.get('user_name') || ''),
+        email: String(formValues.get('user_email') || ''),
+        subject: String(formValues.get('subject') || ''),
+        message: String(formValues.get('message') || ''),
+      };
+
+      const response = await fetch('http://localhost:5000/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
+      const responseText = await response.text();
+      let data: { success?: boolean; message?: string } = {};
 
-      if (response.ok) {
-        setSubmittedName(currentName);
-        setIsSubmitted(true);
-        setFormData({ name: '', email: '', subject: '', message: '' });
-        setStatus({ type: null, message: '' });
-        window.scrollTo(0, 0);
-      } else {
-        setStatus({ type: 'error', message: data.error || 'Failed to send message.' });
+      if (responseText) {
+        try {
+          data = JSON.parse(responseText);
+        } catch {
+          data = { message: responseText };
+        }
       }
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || `Failed to send message. (${response.status})`);
+      }
+
+      setSubmittedName(currentName);
+      setIsSubmitted(true);
+      setFormData({ name: '', email: '', subject: '', message: '' });
+      setStatus({ type: 'success', message: 'Message sent successfully!' });
+      window.scrollTo(0, 0);
     } catch (error) {
-      setStatus({ type: 'error', message: 'An error occurred. Please try again later.' });
+      setStatus({
+        type: 'error',
+        message: error instanceof Error
+          ? error.message
+          : 'The contact form could not send your message right now. Please try again or email me directly.',
+      });
     }
   };
   const scaleX = useSpring(scrollYProgress, {
@@ -1240,56 +1263,56 @@ export default function App() {
               title="Get In Touch" 
               subtitle="Have a project in mind or just want to say hi? Feel free to reach out!"
             />
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
               {/* Contact Info */}
               <motion.div
                 initial={{ opacity: 0, x: -30 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                className="space-y-16"
+                className="space-y-10 lg:space-y-16"
               >
                 <div>
-                  <h3 className="text-4xl font-display font-bold mb-8 leading-tight">
+                  <h3 className="text-3xl sm:text-4xl font-display font-bold mb-6 sm:mb-8 leading-tight">
                     Let's talk about <span className="gradient-text-mix animate-gradient-x">everything!</span>
                   </h3>
-                  <p className="text-white/70 text-xl leading-relaxed">
+                  <p className="text-white/70 text-base sm:text-xl leading-relaxed max-w-xl">
                     I'm always open to discussing new projects, creative ideas, or opportunities to be part of your visions.
                   </p>
                 </div>
 
-                <div className="space-y-10">
-                  <div className="flex items-center gap-8 group">
-                    <div className="w-16 h-16 glass-card rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary/20 group-hover:scale-110 transition-all shadow-lg">
-                      <Mail size={32} />
+                <div className="space-y-6 sm:space-y-10">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8 group">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 glass-card rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary/20 group-hover:scale-110 transition-all shadow-lg">
+                      <Mail size={28} className="sm:w-8 sm:h-8" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-xs text-white/40 uppercase font-bold tracking-[0.2em] mb-1">Email Me</p>
-                      <p className="text-2xl font-bold group-hover:text-primary transition-colors">santoshmishras951@gmail.com</p>
+                      <p className="text-lg sm:text-2xl font-bold group-hover:text-primary transition-colors break-all">santoshmishras951@gmail.com</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-8 group">
-                    <div className="w-16 h-16 glass-card rounded-2xl flex items-center justify-center text-secondary group-hover:bg-secondary/20 group-hover:scale-110 transition-all shadow-lg">
-                      <Phone size={32} />
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8 group">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 glass-card rounded-2xl flex items-center justify-center text-secondary group-hover:bg-secondary/20 group-hover:scale-110 transition-all shadow-lg">
+                      <Phone size={28} className="sm:w-8 sm:h-8" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-xs text-white/40 uppercase font-bold tracking-[0.2em] mb-1">Call Me</p>
-                      <p className="text-2xl font-bold group-hover:text-secondary transition-colors">+91 9668139559</p>
+                      <p className="text-lg sm:text-2xl font-bold group-hover:text-secondary transition-colors">+91 9668139559</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-8 group">
-                    <div className="w-16 h-16 glass-card rounded-2xl flex items-center justify-center text-accent group-hover:bg-accent/20 group-hover:scale-110 transition-all shadow-lg">
-                      <MapPin size={32} />
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8 group">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 glass-card rounded-2xl flex items-center justify-center text-accent group-hover:bg-accent/20 group-hover:scale-110 transition-all shadow-lg">
+                      <MapPin size={28} className="sm:w-8 sm:h-8" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-xs text-white/40 uppercase font-bold tracking-[0.2em] mb-1">Location</p>
-                      <p className="text-2xl font-bold group-hover:text-accent transition-colors">India (Bhubaneswar)</p>
+                      <p className="text-lg sm:text-2xl font-bold group-hover:text-accent transition-colors">India (Bhubaneswar)</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-10">
-                  <p className="text-xs text-white/40 uppercase font-bold tracking-[0.2em] mb-8">Follow Me</p>
-                  <div className="flex flex-wrap gap-5">
+                <div className="pt-4 sm:pt-10">
+                  <p className="text-xs text-white/40 uppercase font-bold tracking-[0.2em] mb-5 sm:mb-8">Follow Me</p>
+                  <div className="grid grid-cols-2 sm:flex gap-3 sm:gap-5">
                     {[
                       { name: 'Github', url: 'https://github.com/santoshmishras951-coder', color: 'primary' },
                       { name: 'Linkedin', url: 'https://www.linkedin.com/in/santosh-mishra-499b86331/', color: 'secondary' },
@@ -1302,7 +1325,7 @@ export default function App() {
                         target="_blank" 
                         rel="noopener noreferrer"
                         whileHover={{ scale: 1.1, y: -5 }}
-                        className="px-8 py-4 glass-card rounded-2xl hover:bg-white/10 transition-all font-bold text-lg border border-white/5 hover:border-primary/30"
+                        className="px-4 sm:px-8 py-3 sm:py-4 glass-card rounded-2xl hover:bg-white/10 transition-all font-bold text-sm sm:text-lg border border-white/5 hover:border-primary/30 text-center"
                       >
                         {social.name}
                       </motion.a>
@@ -1316,32 +1339,34 @@ export default function App() {
                 initial={{ opacity: 0, x: 30 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                className="glass-card p-12 md:p-16 rounded-[3rem] relative overflow-hidden group"
+                className="glass-card p-6 sm:p-8 md:p-16 rounded-[2rem] sm:rounded-[3rem] relative overflow-hidden group"
               >
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 group-hover:bg-primary/10 transition-all" />
                 
-                <form className="space-y-8 relative z-10" onSubmit={handleContactSubmit}>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                <form id="contact-form" className="space-y-8 relative z-10" onSubmit={handleContactSubmit}>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
                     <div className="space-y-3">
                       <label className="text-sm font-bold text-white/60 ml-2 uppercase tracking-widest">Your Name</label>
                       <input 
                         type="text" 
+                        name="user_name"
                         required
                         placeholder="John Doe"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full px-8 py-5 bg-white/5 border border-white/10 rounded-2xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-lg"
+                        className="w-full px-4 sm:px-8 py-4 sm:py-5 bg-white/5 border border-white/10 rounded-2xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-base sm:text-lg"
                       />
                     </div>
                     <div className="space-y-3">
                       <label className="text-sm font-bold text-white/60 ml-2 uppercase tracking-widest">Your Email</label>
                       <input 
                         type="email" 
+                        name="user_email"
                         required
                         placeholder="john@example.com"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full px-8 py-5 bg-white/5 border border-white/10 rounded-2xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-lg"
+                        className="w-full px-4 sm:px-8 py-4 sm:py-5 bg-white/5 border border-white/10 rounded-2xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-base sm:text-lg"
                       />
                     </div>
                   </div>
@@ -1349,22 +1374,24 @@ export default function App() {
                     <label className="text-sm font-bold text-white/60 ml-2 uppercase tracking-widest">Subject</label>
                     <input 
                       type="text" 
+                      name="subject"
                       required
                       placeholder="Project Inquiry"
                       value={formData.subject}
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                      className="w-full px-8 py-5 bg-white/5 border border-white/10 rounded-2xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-lg"
+                      className="w-full px-4 sm:px-8 py-4 sm:py-5 bg-white/5 border border-white/10 rounded-2xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-base sm:text-lg"
                     />
                   </div>
                   <div className="space-y-3">
                     <label className="text-sm font-bold text-white/60 ml-2 uppercase tracking-widest">Message</label>
                     <textarea 
                       rows={6}
+                      name="message"
                       required
                       placeholder="Tell me about your project..."
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      className="w-full px-8 py-5 bg-white/5 border border-white/10 rounded-2xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all resize-none text-lg"
+                      className="w-full px-4 sm:px-8 py-4 sm:py-5 bg-white/5 border border-white/10 rounded-2xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all resize-none text-base sm:text-lg"
                     />
                   </div>
                   
@@ -1387,7 +1414,7 @@ export default function App() {
                     disabled={status.type === 'loading'}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="w-full py-6 bg-gradient-to-r from-primary via-secondary to-accent rounded-2xl font-bold text-xl hover:shadow-[0_0_30px_rgba(var(--primary-rgb),0.3)] transition-all flex items-center justify-center gap-4 shadow-xl shadow-primary/10 disabled:opacity-50 group/submit overflow-hidden relative"
+                    className="w-full py-5 sm:py-6 bg-gradient-to-r from-primary via-secondary to-accent rounded-2xl font-bold text-lg sm:text-xl hover:shadow-[0_0_30px_rgba(var(--primary-rgb),0.3)] transition-all flex items-center justify-center gap-3 sm:gap-4 shadow-xl shadow-primary/10 disabled:opacity-50 group/submit overflow-hidden relative"
                   >
                     <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/submit:translate-y-0 transition-transform duration-300" />
                     {status.type === 'loading' ? (
